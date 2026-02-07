@@ -29,12 +29,10 @@ fun AppNavigation(
         navController = navController,
         startDestination = startDestination
     ) {
-        // Écran de connexion
         composable(Screen.Login.route) {
             LoginScreen(
                 onLoginSuccess = {
                     navController.navigate(Screen.Home.route) {
-                        // Supprimer l'écran de connexion de la pile de navigation
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
                 }
