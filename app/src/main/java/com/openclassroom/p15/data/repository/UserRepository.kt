@@ -15,30 +15,34 @@ class UserRepository {
      * Create a new user in Firestore
      */
     suspend fun createUser(user: User): Result<Unit> {
-
+        return TODO("Provide the return value")
     }
 
     /**
      * Get a user by UID
      */
     suspend fun getUser(uid: String): Result<User?> {
+        return TODO("Provide the return value")
     }
 
     /**
      * Update user profile
      */
     suspend fun updateUser(uid: String, updates: Map<String, Any>): Result<Unit> {
+        return TODO("Provide the return value")
     }
 
     /**
      * Update notification preference
      */
     suspend fun updateNotificationPreference(uid: String, enabled: Boolean): Result<Unit> {
+        return TODO("Provide the return value")
     }
 
     /**
      * Delete user
      */
     suspend fun deleteUser(uid: String): Result<Unit> {
+        return TODO("Provide the return value")
     }
 }
