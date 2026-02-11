@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId = "com.openclassroom.p15"
-        minSdk = 26
+        minSdk = 24
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
@@ -53,6 +53,9 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.appcompat)
+
+    implementation(libs.play.services.appindexing)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -65,4 +68,9 @@ dependencies {
     implementation(libs.firebase.analytics)
     implementation(libs.firebase.auth)
     implementation(libs.firebase.ui.auth)
+
+    implementation(libs.firebase.bom.v3490)
+    implementation(libs.google.firebase.auth)
+    implementation(libs.firebase.firestore)
+
 }
