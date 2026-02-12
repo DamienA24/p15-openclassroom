@@ -1,12 +1,9 @@
-package com.openclassroom.p15.data.model
+package com.openclassroom.p15.domain.model
 
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentId
 import com.google.firebase.firestore.PropertyName
 
-/**
- * Data class representing an Event in Firestore
- */
 data class Event(
     @DocumentId
     val id: String = "",

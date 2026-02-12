@@ -5,15 +5,17 @@ import com.firebase.ui.auth.AuthUI
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.tasks.await
+import com.openclassroom.p15.domain.repository.AuthRepository
+import javax.inject.Inject
 
-class AuthRepository {
+class AuthRepositoryImpl @Inject constructor() : AuthRepository {
 
     private val auth = FirebaseAuth.getInstance()
 
-    val currentUser: FirebaseUser?
+    override val currentUser: FirebaseUser?
         get() = auth.currentUser
 
-    suspend fun signOut(context: Context): Result<Unit> {
+    override suspend fun signOut(context: Context): Result<Unit> {
         return try {
             AuthUI.getInstance().signOut(context).await()
             Result.success(Unit)
