@@ -2,20 +2,23 @@ package com.openclassroom.p15.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.openclassroom.p15.data.model.Event
-import com.openclassroom.p15.data.repository.EventRepository
-import com.openclassroom.p15.data.repository.UserRepository
+import com.openclassroom.p15.domain.model.Event
+import com.openclassroom.p15.domain.repository.EventRepository
+import com.openclassroom.p15.domain.repository.UserRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class EventViewModel : ViewModel() {
-
-    private val eventRepository = EventRepository()
-    private val userRepository = UserRepository()
+@HiltViewModel
+class EventViewModel @Inject constructor(
+    private val eventRepository: EventRepository,
+    private val userRepository: UserRepository
+) : ViewModel() {
 
     private val _events = MutableStateFlow<List<Event>>(emptyList())
 

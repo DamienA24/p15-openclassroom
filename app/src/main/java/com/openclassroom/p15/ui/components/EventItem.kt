@@ -24,7 +24,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.openclassroom.p15.data.model.Event
+import com.openclassroom.p15.domain.model.Event
 import java.text.SimpleDateFormat
 import java.util.Locale
 

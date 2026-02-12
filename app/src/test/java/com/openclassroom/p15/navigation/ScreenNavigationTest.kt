@@ -14,4 +14,14 @@ class ScreenNavigationTest {
     fun `home screen route should be correct`() {
         assertEquals("home", Screen.Home.route)
     }
+
+    @Test
+    fun `event list screen route should be correct`() {
+        assertEquals("event_list", Screen.EventList.route)
+    }
+
+    @Test
+    fun `profile screen route should be correct`() {
+        assertEquals("profile", Screen.Profile.route)
+    }
 }
