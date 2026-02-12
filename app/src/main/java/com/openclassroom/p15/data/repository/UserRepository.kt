@@ -2,6 +2,7 @@ package com.openclassroom.p15.data.repository
 
 import com.google.firebase.firestore.FirebaseFirestore
 import com.openclassroom.p15.data.model.User
+import kotlinx.coroutines.tasks.await
 
 /**
  * Repository for User operations with Firestore
@@ -22,7 +23,13 @@ class UserRepository {
      * Get a user by UID
      */
     suspend fun getUser(uid: String): Result<User?> {
-        return TODO("Provide the return value")
+        return try {
+            val snapshot = usersCollection.document(uid).get().await()
+            val user = snapshot.toObject(User::class.java)
+            Result.success(user)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 
     /**
