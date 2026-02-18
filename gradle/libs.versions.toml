@@ -1,7 +1,6 @@
 [versions]
 agp = "8.13.2"
 firebaseBom = "34.8.0"
-firebaseBomVersion = "34.9.0"
 firebaseUiAuth = "9.1.1"
 kotlin = "2.0.21"
 coreKtx = "1.17.0"
@@ -26,7 +25,6 @@ androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = 
 firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
 firebase-auth = { module = "com.google.firebase:firebase-auth" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
-firebase-bom-v3490 = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBomVersion" }
 firebase-firestore = { module = "com.google.firebase:firebase-firestore" }
 firebase-ui-auth = { module = "com.firebaseui:firebase-ui-auth", version.ref = "firebaseUiAuth" }
 google-firebase-auth = { module = "com.google.firebase:firebase-auth" }

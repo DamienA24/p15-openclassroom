@@ -45,6 +45,7 @@ import com.openclassroom.p15.ui.viewmodel.EventViewModel
 @Composable
 fun EventListScreen(
     onCreateEvent: () -> Unit = {},
+    onEventClick: (String) -> Unit = {},
     eventViewModel: EventViewModel = hiltViewModel()
 ) {
     val events by eventViewModel.filteredEvents.collectAsState()
@@ -166,7 +167,8 @@ fun EventListScreen(
                         items(events, key = { it.id }) { event ->
                             EventItem(
                                 event = event,
-                                creatorAvatarUrl = creatorAvatars[event.creatorId]
+                                creatorAvatarUrl = creatorAvatars[event.creatorId],
+                                onClick = { onEventClick(event.id) }
                             )
                         }
                     }

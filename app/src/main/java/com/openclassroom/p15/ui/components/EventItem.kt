@@ -1,5 +1,6 @@
 package com.openclassroom.p15.ui.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -31,7 +32,8 @@ import java.util.Locale
 @Composable
 fun EventItem(
     event: Event,
-    creatorAvatarUrl: String?
+    creatorAvatarUrl: String?,
+    onClick: () -> Unit = {}
 ) {
     val dateFormat = remember { SimpleDateFormat("MMMM d, yyyy", Locale.ENGLISH) }
     val formattedDate = remember(event.date) { dateFormat.format(event.date.toDate()) }
@@ -39,7 +41,8 @@ fun EventItem(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp),
+            .padding(horizontal = 16.dp, vertical = 4.dp)
+            .clickable { onClick() },
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant

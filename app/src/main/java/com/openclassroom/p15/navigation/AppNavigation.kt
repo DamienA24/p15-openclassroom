@@ -22,6 +22,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.auth.FirebaseAuth
+import com.openclassroom.p15.ui.screens.EventDetailScreen
 import com.openclassroom.p15.ui.screens.EventListScreen
 import com.openclassroom.p15.ui.screens.LoginScreen
 import com.openclassroom.p15.ui.screens.ProfileScreen
@@ -32,6 +33,9 @@ sealed class Screen(val route: String) {
     object Home : Screen("home")
     object EventList : Screen("event_list")
     object Profile : Screen("profile")
+    object EventDetail : Screen("event_detail/{eventId}") {
+        fun createRoute(eventId: String) = "event_detail/$eventId"
+    }
 }
 
 data class BottomNavItem(
@@ -71,7 +75,18 @@ fun AppNavigation(
                     navController.navigate(Screen.Login.route) {
                         popUpTo(0) { inclusive = true }
                     }
+                },
+                onEventClick = { eventId ->
+                    navController.navigate(Screen.EventDetail.createRoute(eventId))
                 }
+            )
+        }
+
+        composable(Screen.EventDetail.route) { backStackEntry ->
+            val eventId = backStackEntry.arguments?.getString("eventId") ?: return@composable
+            EventDetailScreen(
+                eventId = eventId,
+                onBack = { navController.popBackStack() }
             )
         }
     }
@@ -80,6 +95,7 @@ fun AppNavigation(
 @Composable
 fun MainLayout(
     onLogout: () -> Unit,
+    onEventClick: (String) -> Unit = {},
     authViewModel: AuthViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
@@ -119,7 +135,8 @@ fun MainLayout(
         ) {
             composable(Screen.EventList.route) {
                 EventListScreen(
-                    onCreateEvent = { /* TODO: navigate to create event screen */ }
+                    onCreateEvent = { /* TODO: navigate to create event screen */ },
+                    onEventClick = onEventClick
                 )
             }
 

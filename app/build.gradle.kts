@@ -1,3 +1,6 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -5,6 +8,12 @@ plugins {
     alias(libs.plugins.kotlin.kapt)
     alias(libs.plugins.hilt.android.plugin)
     id("com.google.gms.google-services")
+}
+
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(FileInputStream(localPropertiesFile))
 }
 
 android {
@@ -19,6 +28,7 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField("String", "MAPS_API_KEY", "\"${localProperties.getProperty("MAPS_API_KEY", "")}\"")
     }
 
     buildTypes {
@@ -39,6 +49,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -71,7 +82,6 @@ dependencies {
     implementation(libs.firebase.auth)
     implementation(libs.firebase.ui.auth)
 
-    implementation(libs.firebase.bom.v3490)
     implementation(libs.google.firebase.auth)
     implementation(libs.firebase.firestore)
 
