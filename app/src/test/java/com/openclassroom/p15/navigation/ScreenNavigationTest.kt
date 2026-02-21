@@ -24,4 +24,14 @@ class ScreenNavigationTest {
     fun `profile screen route should be correct`() {
         assertEquals("profile", Screen.Profile.route)
     }
+
+    @Test
+    fun `event detail screen route should be correct`() {
+        assertEquals("event_detail/{eventId}", Screen.EventDetail.route)
+    }
+
+    @Test
+    fun `event detail screen createRoute should include eventId`() {
+        assertEquals("event_detail/abc123", Screen.EventDetail.createRoute("abc123"))
+    }
 }
