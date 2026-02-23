@@ -84,6 +84,7 @@ dependencies {
 
     implementation(libs.google.firebase.auth)
     implementation(libs.firebase.firestore)
+    implementation(libs.firebase.messaging)
 
     implementation(libs.coil.compose)
 

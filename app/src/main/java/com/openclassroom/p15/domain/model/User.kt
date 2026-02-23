@@ -23,6 +23,9 @@ data class User(
     @PropertyName("notificationsEnabled")
     val notificationsEnabled: Boolean = true,
 
+    @PropertyName("fcmToken")
+    val fcmToken: String = "",
+
     @PropertyName("createdAt")
     val createdAt: Timestamp = Timestamp.now(),
 
@@ -39,6 +42,7 @@ data class User(
         lastName = "",
         avatarUrl = "",
         notificationsEnabled = true,
+        fcmToken = "",
         createdAt = Timestamp.now(),
         updatedAt = Timestamp.now()
     )
