@@ -40,7 +40,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
-import com.openclassroom.p15.BuildConfig
 import com.openclassroom.p15.domain.model.Event
 import com.openclassroom.p15.ui.viewmodel.EventDetailViewModel
 import java.text.SimpleDateFormat
@@ -55,6 +54,7 @@ fun EventDetailScreen(
 ) {
     val event by viewModel.event.collectAsState()
     val creatorAvatarUrl by viewModel.creatorAvatarUrl.collectAsState()
+    val staticMapUrl by viewModel.staticMapUrl.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
 
@@ -98,7 +98,8 @@ fun EventDetailScreen(
                 )
                 event != null -> EventDetailContent(
                     event = event!!,
-                    creatorAvatarUrl = creatorAvatarUrl
+                    creatorAvatarUrl = creatorAvatarUrl,
+                    staticMapUrl = staticMapUrl
                 )
             }
         }
@@ -106,7 +107,7 @@ fun EventDetailScreen(
 }
 
 @Composable
-private fun EventDetailContent(event: Event, creatorAvatarUrl: String?) {
+private fun EventDetailContent(event: Event, creatorAvatarUrl: String?, staticMapUrl: String?) {
     val dateFormat = remember { SimpleDateFormat("MMMM d, yyyy", Locale.ENGLISH) }
     val timeFormat = remember { SimpleDateFormat("hh:mm a", Locale.ENGLISH) }
     val formattedDate = remember(event.date) { dateFormat.format(event.date.toDate()) }
@@ -193,15 +194,10 @@ private fun EventDetailContent(event: Event, creatorAvatarUrl: String?) {
                         style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier.weight(1f)
                     )
-                    if (event.location.latitude != 0.0 || event.location.longitude != 0.0) {
+                    if (staticMapUrl != null) {
                         Spacer(modifier = Modifier.width(12.dp))
-                        val mapsUrl = "https://maps.googleapis.com/maps/api/staticmap" +
-                            "?center=${event.location.latitude},${event.location.longitude}" +
-                            "&zoom=15&size=300x200" +
-                            "&markers=color:red%7C${event.location.latitude},${event.location.longitude}" +
-                            "&key=${BuildConfig.MAPS_API_KEY}"
                         AsyncImage(
-                            model = mapsUrl,
+                            model = staticMapUrl,
                             contentDescription = "Map of ${event.location.address}",
                             modifier = Modifier
                                 .size(width = 130.dp, height = 80.dp)

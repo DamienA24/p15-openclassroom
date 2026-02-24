@@ -1,13 +1,17 @@
 package com.openclassroom.p15.data.repository
 
 import android.content.Context
+import android.location.Geocoder
 import android.net.Uri
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import com.openclassroom.p15.domain.model.Event
+import com.openclassroom.p15.domain.model.EventLocation
 import com.openclassroom.p15.domain.repository.EventRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 import java.util.UUID
 import javax.inject.Inject
 
@@ -49,6 +53,19 @@ class EventRepositoryImpl @Inject constructor(
             Result.success(event)
         } catch (e: Exception) {
             Result.failure(e)
+        }
+    }
+
+    override suspend fun geocodeAddress(address: String): EventLocation = withContext(Dispatchers.IO) {
+        try {
+            val addresses = Geocoder(context).getFromLocationName(address, 1)
+            if (!addresses.isNullOrEmpty()) {
+                EventLocation(address = address, latitude = addresses[0].latitude, longitude = addresses[0].longitude)
+            } else {
+                EventLocation(address = address)
+            }
+        } catch (e: Exception) {
+            EventLocation(address = address)
         }
     }
 

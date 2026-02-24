@@ -2,6 +2,7 @@ package com.openclassroom.p15.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.openclassroom.p15.BuildConfig
 import com.openclassroom.p15.domain.model.Event
 import com.openclassroom.p15.domain.repository.EventRepository
 import com.openclassroom.p15.domain.repository.UserRepository
@@ -24,6 +25,9 @@ class EventDetailViewModel @Inject constructor(
     private val _creatorAvatarUrl = MutableStateFlow<String?>(null)
     val creatorAvatarUrl: StateFlow<String?> = _creatorAvatarUrl.asStateFlow()
 
+    private val _staticMapUrl = MutableStateFlow<String?>(null)
+    val staticMapUrl: StateFlow<String?> = _staticMapUrl.asStateFlow()
+
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
@@ -44,6 +48,12 @@ class EventDetailViewModel @Inject constructor(
                                 _creatorAvatarUrl.value = user.avatarUrl.ifBlank { null }
                             }
                         }
+                        if (event.location.latitude != 0.0 || event.location.longitude != 0.0) {
+                            _staticMapUrl.value = buildStaticMapUrl(
+                                event.location.latitude,
+                                event.location.longitude
+                            )
+                        }
                     } else {
                         _error.value = "Event not found"
                     }
@@ -55,4 +65,10 @@ class EventDetailViewModel @Inject constructor(
             _isLoading.value = false
         }
     }
+
+    private fun buildStaticMapUrl(lat: Double, lng: Double): String =
+        "https://maps.googleapis.com/maps/api/staticmap" +
+            "?center=$lat,$lng&zoom=15&size=300x200" +
+            "&markers=color:red%7C$lat,$lng" +
+            "&key=${BuildConfig.MAPS_API_KEY}"
 }

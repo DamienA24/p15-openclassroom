@@ -5,12 +5,10 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import android.net.Uri
 import com.google.firebase.Timestamp
 import com.openclassroom.p15.domain.model.Event
-import com.openclassroom.p15.domain.model.User
-import com.openclassroom.p15.domain.repository.EventRepository
-import com.openclassroom.p15.domain.repository.UserRepository
+import com.openclassroom.p15.testutil.FakeEventRepository
+import com.openclassroom.p15.testutil.FakeUserRepository
 import com.openclassroom.p15.ui.viewmodel.EventViewModel
 import org.junit.Rule
 import org.junit.Test
@@ -51,37 +49,11 @@ class EventListScreenTest {
         )
     )
 
-    private fun createFakeEventRepository(
-        events: List<Event> = testEvents,
-        shouldFail: Boolean = false
-    ): EventRepository = object : EventRepository {
-        override suspend fun getAllEvents(): Result<List<Event>> {
-            return if (shouldFail) Result.failure(Exception("Network error"))
-            else Result.success(events)
-        }
-        override suspend fun createEvent(event: Event) = TODO()
-        override suspend fun uploadImage(imageUri: Uri) = TODO()
-        override suspend fun getEvent(eventId: String) = TODO()
-    }
-
-    private fun createFakeUserRepository(): UserRepository = object : UserRepository {
-        override suspend fun getUser(uid: String): Result<User?> {
-            return Result.success(User(uid = uid, avatarUrl = "https://example.com/avatar.jpg"))
-        }
-        override suspend fun createUser(user: User) = TODO()
-        override suspend fun updateUser(uid: String, updates: Map<String, Any>) = TODO()
-        override suspend fun updateNotificationPreference(uid: String, enabled: Boolean) = TODO()
-    }
-
-    private fun createViewModel(
-        events: List<Event> = testEvents,
-        shouldFail: Boolean = false
-    ): EventViewModel {
-        return EventViewModel(
-            eventRepository = createFakeEventRepository(events, shouldFail),
-            userRepository = createFakeUserRepository()
+    private fun createViewModel(events: List<Event> = testEvents, shouldFail: Boolean = false) =
+        EventViewModel(
+            eventRepository = FakeEventRepository(events = events, shouldFail = shouldFail),
+            userRepository = FakeUserRepository()
         )
-    }
 
     @Test
     fun eventListScreen_displaysTitle() {

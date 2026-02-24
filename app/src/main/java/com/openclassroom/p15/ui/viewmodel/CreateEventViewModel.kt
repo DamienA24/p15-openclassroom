@@ -1,7 +1,5 @@
 package com.openclassroom.p15.ui.viewmodel
 
-import android.content.Context
-import android.location.Geocoder
 import android.net.Uri
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -11,17 +9,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.Timestamp
 import com.openclassroom.p15.domain.model.Event
-import com.openclassroom.p15.domain.model.EventLocation
 import com.openclassroom.p15.domain.repository.AuthRepository
 import com.openclassroom.p15.domain.repository.EventRepository
 import com.openclassroom.p15.domain.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.util.Calendar
 import java.util.Date
 import java.util.TimeZone
@@ -40,7 +35,7 @@ class CreateEventViewModel @Inject constructor(
 
     var selectedDateMillis by mutableStateOf<Long?>(null)
 
-    val cal: Calendar = Calendar.getInstance()
+    private val cal: Calendar = Calendar.getInstance()
     var selectedHour by mutableIntStateOf(cal.get(Calendar.HOUR_OF_DAY))
     var selectedMinute by mutableIntStateOf(cal.get(Calendar.MINUTE))
 
@@ -55,7 +50,7 @@ class CreateEventViewModel @Inject constructor(
     private val _eventCreated = MutableStateFlow(false)
     val eventCreated: StateFlow<Boolean> = _eventCreated.asStateFlow()
 
-    fun createEvent(context: Context) {
+    fun createEvent() {
         if (title.isBlank()) {
             _error.value = "Le titre est obligatoire"
             return
@@ -82,9 +77,7 @@ class CreateEventViewModel @Inject constructor(
                     }
                 } else ""
 
-                val location = withContext(Dispatchers.IO) {
-                    geocodeAddress(context, address)
-                }
+                val location = eventRepository.geocodeAddress(address)
 
                 val utcCal = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
                 utcCal.timeInMillis = selectedDateMillis!!
@@ -129,25 +122,6 @@ class CreateEventViewModel @Inject constructor(
             } finally {
                 _isLoading.value = false
             }
-        }
-    }
-
-    @Suppress("DEPRECATION")
-    private fun geocodeAddress(context: Context, addressStr: String): EventLocation {
-        return try {
-            val geocoder = Geocoder(context)
-            val addresses = geocoder.getFromLocationName(addressStr, 1)
-            if (!addresses.isNullOrEmpty()) {
-                EventLocation(
-                    address = addressStr,
-                    latitude = addresses[0].latitude,
-                    longitude = addresses[0].longitude
-                )
-            } else {
-                EventLocation(address = addressStr)
-            }
-        } catch (e: Exception) {
-            EventLocation(address = addressStr)
         }
     }
 }

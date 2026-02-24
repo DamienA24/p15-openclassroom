@@ -1,12 +1,10 @@
 package com.openclassroom.p15.ui.viewmodel
 
-import android.net.Uri
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.firebase.Timestamp
 import com.openclassroom.p15.domain.model.Event
-import com.openclassroom.p15.domain.model.User
-import com.openclassroom.p15.domain.repository.EventRepository
-import com.openclassroom.p15.domain.repository.UserRepository
+import com.openclassroom.p15.testutil.FakeEventRepository
+import com.openclassroom.p15.testutil.FakeUserRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -15,7 +13,6 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -45,27 +42,11 @@ class EventViewModelTest {
         Dispatchers.resetMain()
     }
 
-    private fun fakeEventRepo(
-        result: List<Event> = events,
-        shouldFail: Boolean = false
-    ): EventRepository = object : EventRepository {
-        override suspend fun getAllEvents() =
-            if (shouldFail) Result.failure(Exception("Network error"))
-            else Result.success(result)
-        override suspend fun createEvent(event: Event) = Result.success("")
-        override suspend fun uploadImage(imageUri: Uri) = Result.success("")
-        override suspend fun getEvent(eventId: String) = Result.success(null)
-    }
-
-    private fun fakeUserRepo(): UserRepository = object : UserRepository {
-        override suspend fun getUser(uid: String) = Result.success<User?>(null)
-        override suspend fun createUser(user: User) = Result.success(Unit)
-        override suspend fun updateUser(uid: String, updates: Map<String, Any>) = Result.success(Unit)
-        override suspend fun updateNotificationPreference(uid: String, enabled: Boolean) = Result.success(Unit)
-    }
-
     private fun createViewModel(shouldFail: Boolean = false) =
-        EventViewModel(fakeEventRepo(shouldFail = shouldFail), fakeUserRepo())
+        EventViewModel(
+            eventRepository = FakeEventRepository(events = events, shouldFail = shouldFail),
+            userRepository = FakeUserRepository()
+        )
 
     @Test
     fun loadEvents_success_setsFilteredEvents() {

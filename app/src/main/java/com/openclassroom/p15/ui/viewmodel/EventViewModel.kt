@@ -20,7 +20,7 @@ class EventViewModel @Inject constructor(
     private val userRepository: UserRepository
 ) : ViewModel() {
 
-    private val _events = MutableStateFlow<List<Event>>(emptyList())
+    private val _allEvents = MutableStateFlow<List<Event>>(emptyList())
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
@@ -51,7 +51,7 @@ class EventViewModel @Inject constructor(
 
             eventRepository.getAllEvents()
                 .onSuccess { events ->
-                    _events.value = events
+                    _allEvents.value = events
                     applyFiltersAndSort()
                     loadCreatorAvatars(events)
                 }
@@ -89,7 +89,7 @@ class EventViewModel @Inject constructor(
     }
 
     private fun applyFiltersAndSort() {
-        var result = _events.value
+        var result = _allEvents.value
 
         val query = _searchQuery.value
         if (query.isNotBlank()) {

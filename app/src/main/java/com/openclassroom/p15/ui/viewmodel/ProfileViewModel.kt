@@ -1,13 +1,17 @@
 package com.openclassroom.p15.ui.viewmodel
 
+import android.os.Build
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.openclassroom.p15.domain.model.User
 import com.openclassroom.p15.domain.repository.AuthRepository
 import com.openclassroom.p15.domain.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -27,12 +31,15 @@ class ProfileViewModel @Inject constructor(
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
 
+    private val _requestNotificationPermission = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    val requestNotificationPermission: SharedFlow<Unit> = _requestNotificationPermission.asSharedFlow()
+
     fun loadUser() {
         val uid = authRepository.currentUser?.uid ?: return
         loadUserById(uid)
     }
 
-    fun loadUserById(uid: String) {
+    internal fun loadUserById(uid: String) {
         if (uid.isBlank()) return
         viewModelScope.launch {
             _isLoading.value = true
@@ -60,6 +67,14 @@ class ProfileViewModel @Inject constructor(
                 }
 
             _isLoading.value = false
+        }
+    }
+
+    fun onNotificationToggled(enabled: Boolean) {
+        if (enabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            _requestNotificationPermission.tryEmit(Unit)
+        } else {
+            toggleNotifications(enabled)
         }
     }
 

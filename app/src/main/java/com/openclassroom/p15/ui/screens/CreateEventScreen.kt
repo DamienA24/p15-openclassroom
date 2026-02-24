@@ -321,7 +321,7 @@ fun CreateEventScreen(
 
             // Validate button
             Button(
-                onClick = { viewModel.createEvent(context) },
+                onClick = { viewModel.createEvent() },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),

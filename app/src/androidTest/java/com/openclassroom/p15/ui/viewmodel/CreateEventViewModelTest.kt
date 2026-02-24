@@ -2,20 +2,15 @@ package com.openclassroom.p15.ui.viewmodel
 
 import android.net.Uri
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.platform.app.InstrumentationRegistry
-import com.openclassroom.p15.domain.model.Event
-import com.openclassroom.p15.domain.model.User
-import com.openclassroom.p15.domain.repository.AuthRepository
-import com.openclassroom.p15.domain.repository.EventRepository
-import com.openclassroom.p15.domain.repository.UserRepository
+import com.openclassroom.p15.testutil.FakeAuthRepository
+import com.openclassroom.p15.testutil.FakeEventRepository
+import com.openclassroom.p15.testutil.FakeUserRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
-import kotlinx.coroutines.withTimeout
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -30,7 +25,6 @@ import org.junit.runner.RunWith
 class CreateEventViewModelTest {
 
     private val testDispatcher = UnconfinedTestDispatcher()
-    private val context = InstrumentationRegistry.getInstrumentation().targetContext
 
     @Before
     fun setup() {
@@ -42,43 +36,13 @@ class CreateEventViewModelTest {
         Dispatchers.resetMain()
     }
 
-    // ---- Fake repositories ----
-
-    private fun fakeEventRepo(
-        uploadShouldFail: Boolean = false,
-        createShouldFail: Boolean = false
-    ): EventRepository = object : EventRepository {
-        override suspend fun createEvent(event: Event): Result<String> =
-            if (createShouldFail) Result.failure(Exception("Erreur Firestore"))
-            else Result.success("event-id-123")
-
-        override suspend fun uploadImage(imageUri: Uri): Result<String> =
-            if (uploadShouldFail) Result.failure(Exception("Upload échoué"))
-            else Result.success("https://example.com/image.jpg")
-
-        override suspend fun getAllEvents() = Result.success(emptyList<Event>())
-        override suspend fun getEvent(eventId: String) = Result.success(null)
-    }
-
-    private fun fakeUserRepo(): UserRepository = object : UserRepository {
-        override suspend fun getUser(uid: String) = Result.success<User?>(null)
-        override suspend fun createUser(user: User) = Result.success(Unit)
-        override suspend fun updateUser(uid: String, updates: Map<String, Any>) = Result.success(Unit)
-        override suspend fun updateNotificationPreference(uid: String, enabled: Boolean) = Result.success(Unit)
-    }
-
-    private fun fakeAuthRepo(): AuthRepository = object : AuthRepository {
-        override val currentUser = null
-        override suspend fun signOut(context: android.content.Context) = Result.success(Unit)
-    }
-
     private fun createViewModel(
         uploadShouldFail: Boolean = false,
         createShouldFail: Boolean = false
     ) = CreateEventViewModel(
-        eventRepository = fakeEventRepo(uploadShouldFail, createShouldFail),
-        authRepository = fakeAuthRepo(),
-        userRepository = fakeUserRepo()
+        eventRepository = FakeEventRepository(uploadShouldFail = uploadShouldFail, createShouldFail = createShouldFail),
+        authRepository = FakeAuthRepository(),
+        userRepository = FakeUserRepository()
     )
 
     // ---- Tests de validation (synchrones) ----
@@ -90,7 +54,7 @@ class CreateEventViewModelTest {
         viewModel.selectedDateMillis = System.currentTimeMillis()
         viewModel.address = "Paris"
 
-        viewModel.createEvent(context)
+        viewModel.createEvent()
 
         assertEquals("Le titre est obligatoire", viewModel.error.value)
         assertFalse(viewModel.eventCreated.value)
@@ -103,7 +67,7 @@ class CreateEventViewModelTest {
         viewModel.selectedDateMillis = null
         viewModel.address = "Paris"
 
-        viewModel.createEvent(context)
+        viewModel.createEvent()
 
         assertEquals("La date est obligatoire", viewModel.error.value)
         assertFalse(viewModel.eventCreated.value)
@@ -116,7 +80,7 @@ class CreateEventViewModelTest {
         viewModel.selectedDateMillis = System.currentTimeMillis()
         viewModel.address = ""
 
-        viewModel.createEvent(context)
+        viewModel.createEvent()
 
         assertEquals("L'adresse est obligatoire", viewModel.error.value)
         assertFalse(viewModel.eventCreated.value)
@@ -129,12 +93,14 @@ class CreateEventViewModelTest {
         viewModel.selectedDateMillis = System.currentTimeMillis()
         viewModel.address = "Paris"
 
-        viewModel.createEvent(context)
+        viewModel.createEvent()
 
         assertFalse(viewModel.error.value == "Le titre est obligatoire")
         assertFalse(viewModel.error.value == "La date est obligatoire")
         assertFalse(viewModel.error.value == "L'adresse est obligatoire")
     }
+
+    // ---- Tests asynchrones ----
 
     @Test
     fun createEvent_withUploadFailure_setsError() = runTest {
@@ -144,7 +110,7 @@ class CreateEventViewModelTest {
         viewModel.address = "Paris"
         viewModel.imageUri = Uri.parse("content://fake/image.jpg")
 
-        viewModel.createEvent(context)
+        viewModel.createEvent()
 
         assertTrue(viewModel.error.value?.contains("Échec de l'upload") == true)
         assertFalse(viewModel.eventCreated.value)
@@ -155,7 +121,7 @@ class CreateEventViewModelTest {
         val viewModel = createViewModel()
         viewModel.title = ""
 
-        viewModel.createEvent(context)
+        viewModel.createEvent()
 
         assertFalse(viewModel.isLoading.value)
     }

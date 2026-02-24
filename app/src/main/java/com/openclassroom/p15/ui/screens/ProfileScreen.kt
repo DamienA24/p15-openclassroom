@@ -1,7 +1,6 @@
 package com.openclassroom.p15.ui.screens
 
 import android.Manifest
-import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
@@ -58,6 +57,12 @@ fun ProfileScreen(
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
         viewModel.toggleNotifications(isGranted)
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.requestNotificationPermission.collect {
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
     }
 
     Scaffold(
@@ -136,13 +141,7 @@ fun ProfileScreen(
             ) {
                 Switch(
                     checked = user?.notificationsEnabled ?: false,
-                    onCheckedChange = { enabled ->
-                        if (enabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                        } else {
-                            viewModel.toggleNotifications(enabled)
-                        }
-                    },
+                    onCheckedChange = { enabled -> viewModel.onNotificationToggled(enabled) },
                     colors = SwitchDefaults.colors(
                         checkedThumbColor = Color.White,
                         checkedTrackColor = MaterialTheme.colorScheme.primary

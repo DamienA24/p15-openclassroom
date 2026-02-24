@@ -1,12 +1,12 @@
 package com.openclassroom.p15.ui.viewmodel
 
-import android.net.Uri
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.firebase.Timestamp
 import com.openclassroom.p15.domain.model.Event
+import com.openclassroom.p15.domain.model.EventLocation
 import com.openclassroom.p15.domain.model.User
-import com.openclassroom.p15.domain.repository.EventRepository
-import com.openclassroom.p15.domain.repository.UserRepository
+import com.openclassroom.p15.testutil.FakeEventRepository
+import com.openclassroom.p15.testutil.FakeUserRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -31,7 +31,8 @@ class EventDetailViewModelTest {
         id = "1",
         title = "Art exhibition",
         creatorId = "user1",
-        date = Timestamp.now()
+        date = Timestamp.now(),
+        location = EventLocation(address = "Paris", latitude = 48.8566, longitude = 2.3522)
     )
 
     @Before
@@ -44,28 +45,11 @@ class EventDetailViewModelTest {
         Dispatchers.resetMain()
     }
 
-    private fun fakeEventRepo(
-        event: Event? = testEvent,
-        shouldFail: Boolean = false
-    ): EventRepository = object : EventRepository {
-        override suspend fun getEvent(eventId: String) =
-            if (shouldFail) Result.failure(Exception("Network error"))
-            else Result.success(event)
-        override suspend fun getAllEvents() = Result.success(emptyList<Event>())
-        override suspend fun createEvent(event: Event) = Result.success("")
-        override suspend fun uploadImage(imageUri: Uri) = Result.success("")
-    }
-
-    private fun fakeUserRepo(avatarUrl: String = ""): UserRepository = object : UserRepository {
-        override suspend fun getUser(uid: String) =
-            Result.success<User?>(User(uid = uid, avatarUrl = avatarUrl))
-        override suspend fun createUser(user: User) = Result.success(Unit)
-        override suspend fun updateUser(uid: String, updates: Map<String, Any>) = Result.success(Unit)
-        override suspend fun updateNotificationPreference(uid: String, enabled: Boolean) = Result.success(Unit)
-    }
-
-    private fun createViewModel(event: Event? = testEvent, shouldFail: Boolean = false) =
-        EventDetailViewModel(fakeEventRepo(event, shouldFail), fakeUserRepo())
+    private fun createViewModel(event: Event? = testEvent, shouldFail: Boolean = false, avatarUrl: String = "") =
+        EventDetailViewModel(
+            eventRepository = FakeEventRepository(singleEvent = event, shouldFail = shouldFail),
+            userRepository = FakeUserRepository(user = if (avatarUrl.isNotBlank()) User(uid = "user1", avatarUrl = avatarUrl) else null)
+        )
 
     @Test
     fun initialState_isClean() {
@@ -103,10 +87,7 @@ class EventDetailViewModelTest {
 
     @Test
     fun loadEvent_withCreatorAvatar_setsAvatarUrl() {
-        val vm = EventDetailViewModel(
-            fakeEventRepo(),
-            fakeUserRepo(avatarUrl = "https://example.com/avatar.jpg")
-        )
+        val vm = createViewModel(avatarUrl = "https://example.com/avatar.jpg")
         vm.loadEvent("1")
         assertEquals("https://example.com/avatar.jpg", vm.creatorAvatarUrl.value)
     }

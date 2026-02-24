@@ -6,8 +6,8 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import com.google.firebase.Timestamp
 import com.openclassroom.p15.domain.model.User
-import com.openclassroom.p15.domain.repository.AuthRepository
-import com.openclassroom.p15.domain.repository.UserRepository
+import com.openclassroom.p15.testutil.FakeAuthRepository
+import com.openclassroom.p15.testutil.FakeUserRepository
 import com.openclassroom.p15.ui.viewmodel.ProfileViewModel
 import org.junit.Rule
 import org.junit.Test
@@ -28,25 +28,10 @@ class ProfileScreenTest {
         updatedAt = Timestamp.now()
     )
 
-    private fun createFakeUserRepository(user: User? = null): UserRepository =
-        object : UserRepository {
-            override suspend fun getUser(uid: String): Result<User?> = Result.success(user)
-            override suspend fun createUser(user: User): Result<Unit> = Result.success(Unit)
-            override suspend fun updateUser(uid: String, updates: Map<String, Any>): Result<Unit> = Result.success(Unit)
-            override suspend fun updateNotificationPreference(uid: String, enabled: Boolean): Result<Unit> = Result.success(Unit)
-            override suspend fun deleteUser(uid: String): Result<Unit> = Result.success(Unit)
-        }
-
-    private fun createFakeAuthRepository(): AuthRepository = object : AuthRepository {
-        override val currentUser = null
-        override suspend fun signOut(context: android.content.Context) = Result.success(Unit)
-    }
-
-    private fun createViewModel(user: User? = null): ProfileViewModel =
-        ProfileViewModel(
-            authRepository = createFakeAuthRepository(),
-            userRepository = createFakeUserRepository(user)
-        )
+    private fun createViewModel(user: User? = null) = ProfileViewModel(
+        authRepository = FakeAuthRepository(),
+        userRepository = FakeUserRepository(user = user)
+    )
 
     @Test
     fun profileScreen_displaysTitle() {
@@ -131,9 +116,7 @@ class ProfileScreenTest {
             ProfileScreen(onLogout = {}, viewModel = viewModel)
         }
 
-        // Trigger load with uid
         viewModel.loadUserById("user1")
-
         composeTestRule.waitForIdle()
 
         composeTestRule
@@ -150,7 +133,6 @@ class ProfileScreenTest {
         }
 
         viewModel.loadUserById("user1")
-
         composeTestRule.waitForIdle()
 
         composeTestRule
