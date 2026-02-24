@@ -87,6 +87,8 @@ dependencies {
     implementation(libs.firebase.messaging)
 
     implementation(libs.coil.compose)
+    implementation(libs.firebase.storage)
+    implementation(libs.androidx.compose.material.icons.extended)
 
     implementation(libs.hilt.android)
     kapt(libs.hilt.android.compiler)
@@ -94,4 +96,6 @@ dependencies {
 
     androidTestImplementation(libs.hilt.android.testing)
     kaptAndroidTest(libs.hilt.android.compiler)
+    testImplementation(libs.kotlinx.coroutines.test)
+    androidTestImplementation(libs.kotlinx.coroutines.test)
 }

@@ -148,7 +148,7 @@ fun EventListScreen(
                             modifier = Modifier.padding(16.dp)
                         )
                         Button(onClick = { eventViewModel.loadEvents() }) {
-                            Text("Retry")
+                            Text("Try again")
                         }
                     }
                 }

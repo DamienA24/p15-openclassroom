@@ -1,18 +1,45 @@
 package com.openclassroom.p15.data.repository
 
+import android.content.Context
+import android.net.Uri
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
 import com.openclassroom.p15.domain.model.Event
 import com.openclassroom.p15.domain.repository.EventRepository
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.tasks.await
+import java.util.UUID
 import javax.inject.Inject
 
-class EventRepositoryImpl @Inject constructor() : EventRepository {
+class EventRepositoryImpl @Inject constructor(
+    @ApplicationContext private val context: Context
+) : EventRepository {
 
     private val firestore = FirebaseFirestore.getInstance()
     private val eventsCollection = firestore.collection("events")
+    private val storage = FirebaseStorage.getInstance()
 
     override suspend fun createEvent(event: Event): Result<String> {
-        return TODO("Provide the return value")
+        return try {
+            val docRef = eventsCollection.add(event).await()
+            Result.success(docRef.id)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun uploadImage(imageUri: Uri): Result<String> {
+        return try {
+            val bytes = context.contentResolver.openInputStream(imageUri)?.use { it.readBytes() }
+                ?: return Result.failure(Exception("Impossible d'ouvrir l'image"))
+            val fileName = "events/${UUID.randomUUID()}.jpg"
+            val ref = storage.reference.child(fileName)
+            ref.putBytes(bytes).await()
+            val url = ref.downloadUrl.await().toString()
+            Result.success(url)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 
     override suspend fun getEvent(eventId: String): Result<Event?> {
@@ -35,23 +62,4 @@ class EventRepositoryImpl @Inject constructor() : EventRepository {
         }
     }
 
-    override suspend fun getEventsByCreator(creatorId: String): Result<List<Event>> {
-        return TODO("Provide the return value")
-    }
-
-    override suspend fun updateEvent(eventId: String, updates: Map<String, Any>): Result<Unit> {
-        return TODO("Provide the return value")
-    }
-
-    override suspend fun deleteEvent(eventId: String): Result<Unit> {
-        return TODO("Provide the return value")
-    }
-
-    override suspend fun getUpcomingEvents(): Result<List<Event>> {
-        return TODO("Provide the return value")
-    }
-
-    override suspend fun getPastEvents(): Result<List<Event>> {
-        return TODO("Provide the return value")
-    }
 }

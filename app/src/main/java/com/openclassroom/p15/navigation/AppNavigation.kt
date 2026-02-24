@@ -11,6 +11,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -22,11 +23,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.auth.FirebaseAuth
+import com.openclassroom.p15.ui.screens.CreateEventScreen
 import com.openclassroom.p15.ui.screens.EventDetailScreen
 import com.openclassroom.p15.ui.screens.EventListScreen
 import com.openclassroom.p15.ui.screens.LoginScreen
 import com.openclassroom.p15.ui.screens.ProfileScreen
 import com.openclassroom.p15.ui.viewmodel.AuthViewModel
+import com.openclassroom.p15.ui.viewmodel.EventViewModel
 
 sealed class Screen(val route: String) {
     object Login : Screen("login")
@@ -36,6 +39,7 @@ sealed class Screen(val route: String) {
     object EventDetail : Screen("event_detail/{eventId}") {
         fun createRoute(eventId: String) = "event_detail/$eventId"
     }
+    object CreateEvent : Screen("create_event")
 }
 
 data class BottomNavItem(
@@ -70,6 +74,9 @@ fun AppNavigation(
         }
 
         composable(Screen.Home.route) {
+            // EventViewModel scopé au NavBackStackEntry de Home,
+            // partagé ensuite avec CreateEvent via getBackStackEntry
+            val eventViewModel: EventViewModel = hiltViewModel()
             MainLayout(
                 onLogout = {
                     navController.navigate(Screen.Login.route) {
@@ -78,6 +85,25 @@ fun AppNavigation(
                 },
                 onEventClick = { eventId ->
                     navController.navigate(Screen.EventDetail.createRoute(eventId))
+                },
+                onCreateEvent = {
+                    navController.navigate(Screen.CreateEvent.route)
+                },
+                eventViewModel = eventViewModel
+            )
+        }
+
+        composable(Screen.CreateEvent.route) {
+            // Récupère le même EventViewModel que celui de Home
+            val homeEntry = remember(navController) {
+                navController.getBackStackEntry(Screen.Home.route)
+            }
+            val eventViewModel: EventViewModel = hiltViewModel(homeEntry)
+            CreateEventScreen(
+                onBack = { navController.popBackStack() },
+                onEventCreated = {
+                    eventViewModel.loadEvents()
+                    navController.popBackStack()
                 }
             )
         }
@@ -96,7 +122,9 @@ fun AppNavigation(
 fun MainLayout(
     onLogout: () -> Unit,
     onEventClick: (String) -> Unit = {},
-    authViewModel: AuthViewModel = hiltViewModel()
+    onCreateEvent: () -> Unit = {},
+    authViewModel: AuthViewModel = hiltViewModel(),
+    eventViewModel: EventViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
     val innerNavController = rememberNavController()
@@ -135,8 +163,9 @@ fun MainLayout(
         ) {
             composable(Screen.EventList.route) {
                 EventListScreen(
-                    onCreateEvent = { /* TODO: navigate to create event screen */ },
-                    onEventClick = onEventClick
+                    onCreateEvent = onCreateEvent,
+                    onEventClick = onEventClick,
+                    eventViewModel = eventViewModel
                 )
             }
 

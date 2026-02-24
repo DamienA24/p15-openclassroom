@@ -48,12 +48,4 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
         }
     }
 
-    override suspend fun deleteUser(uid: String): Result<Unit> {
-        return try {
-            usersCollection.document(uid).delete().await()
-            Result.success(Unit)
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-    }
 }

@@ -5,6 +5,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import android.net.Uri
 import com.google.firebase.Timestamp
 import com.openclassroom.p15.domain.model.Event
 import com.openclassroom.p15.domain.model.EventLocation
@@ -45,11 +46,7 @@ class EventDetailScreenTest {
             else Result.success(event)
         override suspend fun getAllEvents() = Result.success(emptyList<Event>())
         override suspend fun createEvent(event: Event) = TODO()
-        override suspend fun getEventsByCreator(creatorId: String) = TODO()
-        override suspend fun updateEvent(eventId: String, updates: Map<String, Any>) = TODO()
-        override suspend fun deleteEvent(eventId: String) = TODO()
-        override suspend fun getUpcomingEvents() = TODO()
-        override suspend fun getPastEvents() = TODO()
+        override suspend fun uploadImage(imageUri: Uri) = TODO()
     }
 
     private fun createFakeUserRepository(): UserRepository = object : UserRepository {
@@ -58,7 +55,6 @@ class EventDetailScreenTest {
         override suspend fun createUser(user: User) = TODO()
         override suspend fun updateUser(uid: String, updates: Map<String, Any>) = TODO()
         override suspend fun updateNotificationPreference(uid: String, enabled: Boolean) = TODO()
-        override suspend fun deleteUser(uid: String) = TODO()
     }
 
     private fun createViewModel(
