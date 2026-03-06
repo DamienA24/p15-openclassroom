@@ -1,21 +1,46 @@
 # Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# ---- Kotlin ----
+-keepclassmembers class **$WhenMappings {
+    <fields>;
+}
+-keep class kotlin.Metadata { *; }
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# ---- Firebase Firestore (data classes mapped via @DocumentId / @PropertyName) ----
+-keepattributes Signature
+-keepattributes *Annotation*
+-keepattributes EnclosingMethod
+-keepattributes InnerClasses
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# Keep all domain model classes (Firestore deserialization needs their fields/constructors)
+-keep class com.openclassroom.p15.domain.model.** { *; }
+
+# ---- Firebase Auth / Firebase UI ----
+-keep class com.google.firebase.** { *; }
+-keep class com.firebase.ui.** { *; }
+-dontwarn com.google.firebase.**
+
+# ---- Hilt / Dagger ----
+-keep class dagger.hilt.** { *; }
+-keep class javax.inject.** { *; }
+-keep @dagger.hilt.android.lifecycle.HiltViewModel class * { *; }
+-keep @dagger.hilt.InstallIn class * { *; }
+-keep @javax.inject.Singleton class * { *; }
+-dontwarn dagger.hilt.**
+
+# ---- Coil (image loading) ----
+-dontwarn coil.**
+
+# ---- Coroutines ----
+-keepclassmembers class kotlinx.coroutines.** {
+    volatile <fields>;
+}
+-dontwarn kotlinx.coroutines.**
+
+# ---- Google Play Services ----
+-keep class com.google.android.gms.** { *; }
+-dontwarn com.google.android.gms.**
+
+# ---- Keep line numbers for crash reports ----
+-keepattributes SourceFile,LineNumberTable
+-renamesourcefileattribute SourceFile
