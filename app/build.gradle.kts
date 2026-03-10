@@ -77,11 +77,19 @@ android {
     }
 }
 
-// AGP's built-in createDebugUnitTestCoverageReport task handles the ASM class mismatch
-// internally. By default it only generates HTML — this forces XML generation too.
+// AGP's JacocoCoverageReport does NOT extend Gradle's JacocoReport, so withType<JacocoReport>()
+// cannot configure it. Use reflection to enable XML output on createDebugUnitTestCoverageReport.
 afterEvaluate {
-    tasks.withType<JacocoReport>().configureEach {
-        reports.xml.required.set(true)
+    tasks.findByName("createDebugUnitTestCoverageReport")?.let { task ->
+        try {
+            val reports = task.javaClass.getMethod("getReports").invoke(task)
+            val xml = reports.javaClass.getMethod("getXml").invoke(reports)
+            @Suppress("UNCHECKED_CAST")
+            (xml.javaClass.getMethod("getRequired").invoke(xml) as org.gradle.api.provider.Property<Boolean>)
+                .set(true)
+        } catch (e: Exception) {
+            logger.warn("Could not enable XML for createDebugUnitTestCoverageReport: ${e.message}")
+        }
     }
 }
 
