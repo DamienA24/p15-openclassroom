@@ -77,39 +77,14 @@ android {
     }
 }
 
-tasks.register<JacocoReport>("jacocoTestReport") {
-    dependsOn("testDebugUnitTest")
-
-    reports {
-        xml.required.set(true)
-        html.required.set(true)
-    }
-
-    val fileFilter = listOf(
-        "**/R.class", "**/R\$*.class", "**/BuildConfig.*", "**/Manifest*.*",
-        "**/*Test*.*", "android/**/*.*",
-        "**/hilt_aggregated_deps/**",
-        "**/*_MembersInjector.class",
-        "**/Dagger*Component*.class",
-        "**/*Module_*Factory.class",
-        "**/*_Factory.class",
-        "**/ComposableSingletons*"
-    )
-
-    val kotlinClasses = fileTree("${layout.buildDirectory.get()}/tmp/kotlin-classes/debug") {
-        exclude(fileFilter)
-    }
-
-    sourceDirectories.setFrom(files("${project.projectDir}/src/main/java"))
-    classDirectories.setFrom(files(kotlinClasses))
-    executionData.setFrom(fileTree(layout.buildDirectory.get()) {
-        include(
-            "outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec",
-            "jacoco/testDebugUnitTest.exec",
-            "outputs/code_coverage/debugAndroidTest/connected/**/*.ec"
-        )
-    })
-}
+// AGP's built-in coverage tasks are used instead of a custom JacocoReport task.
+// With enableUnitTestCoverage = true in the debug buildType, AGP registers:
+//   - createDebugUnitTestCoverageReport
+//     -> XML report at: build/reports/coverage/test/debug/report.xml
+//
+// This avoids the class mismatch error that occurs when a custom task points
+// classDirectories at build/tmp/kotlin-classes/debug (un-instrumented classes)
+// while execution data was collected against ASM-instrumented classes.
 
 dependencies {
 
