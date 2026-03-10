@@ -49,9 +49,6 @@ jobs:
           arch: x86_64
           script: ./gradlew connectedDebugAndroidTest
 
-      - name: Generate JaCoCo coverage report
-        run: ./gradlew jacocoTestReport
-
-      - name: SonarCloud analysis
-        run: ./gradlew sonar -Dsonar.token=${{ secrets.SONAR_TOKEN }}
+      - name: Generate JaCoCo report and SonarCloud analysis
+        run: ./gradlew jacocoTestReport sonar -Dsonar.token=${{ secrets.SONAR_TOKEN }}
 

@@ -19,7 +19,8 @@ sonarqube {
         property("sonar.qualitygate.wait", "true")
         property("sonar.exclusions", listOf(
             "**/R.class", "**/R\$*.class", "**/BuildConfig.*", "**/Manifest*.*",
-            "**/*_MembersInjector.*", "**/Dagger*Component*.*", "**/*_Factory.*", "**/ComposableSingletons*"
+            "**/*_MembersInjector.*", "**/Dagger*Component*.*", "**/*_Factory.*", "**/ComposableSingletons*",
+            "app/src/main/res/**"
         ))
     }
 }
