@@ -14,7 +14,7 @@ sonarqube {
         property("sonar.projectKey", "DamienA24_p15-openclassroom")
         property("sonar.organization", "damiena24")
         property("sonar.host.url", "https://sonarcloud.io")
-        property("sonar.coverage.jacoco.xmlReportPaths", "app/build/reports/coverage/test/debug/report.xml")
+        property("sonar.coverage.jacoco.xmlReportPaths", "app/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml")
         property("sonar.java.binaries", "app/build/tmp/kotlin-classes/debug")
         property("sonar.qualitygate.wait", "true")
         property("sonar.exclusions", listOf(

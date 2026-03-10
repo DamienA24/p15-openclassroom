@@ -50,5 +50,5 @@ jobs:
           script: ./gradlew connectedDebugAndroidTest
 
       - name: Generate JaCoCo report and SonarCloud analysis
-        run: ./gradlew createDebugUnitTestCoverageReport sonar -Dsonar.token=${{ secrets.SONAR_TOKEN }}
+        run: ./gradlew jacocoTestReport sonar -Dsonar.token=${{ secrets.SONAR_TOKEN }}
 
