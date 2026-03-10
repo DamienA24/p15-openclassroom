@@ -77,37 +77,12 @@ android {
     }
 }
 
-tasks.register<JacocoReport>("jacocoTestReport") {
-    dependsOn("testDebugUnitTest")
-
-    reports {
-        xml.required.set(true)
-        html.required.set(true)
+// AGP's built-in createDebugUnitTestCoverageReport task handles the ASM class mismatch
+// internally. By default it only generates HTML — this forces XML generation too.
+afterEvaluate {
+    tasks.withType<JacocoReport>().configureEach {
+        reports.xml.required.set(true)
     }
-
-    val fileFilter = listOf(
-        "**/R.class", "**/R\$*.class", "**/BuildConfig.*", "**/Manifest*.*",
-        "**/*Test*.*", "android/**/*.*",
-        "**/hilt_aggregated_deps/**",
-        "**/*_MembersInjector.class",
-        "**/Dagger*Component*.class",
-        "**/*Module_*Factory.class",
-        "**/*_Factory.class",
-        "**/ComposableSingletons*"
-    )
-
-    // Must use ASM-instrumented classes (output of transformDebugClassesWithAsm),
-    // NOT the original kotlin classes, because enableUnitTestCoverage=true causes
-    // AGP to run JaCoCo instrumentation via ASM, and the .exec data matches those classes.
-    val instrumentedClasses = fileTree(
-        "${layout.buildDirectory.get()}/intermediates/asm_instrumented_project_classes/debug"
-    ) { exclude(fileFilter) }
-
-    sourceDirectories.setFrom(files("${project.projectDir}/src/main/java"))
-    classDirectories.setFrom(files(instrumentedClasses))
-    executionData.setFrom(fileTree(layout.buildDirectory.get()) {
-        include("outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec")
-    })
 }
 
 dependencies {
