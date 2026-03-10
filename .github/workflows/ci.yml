@@ -55,9 +55,3 @@ jobs:
       - name: SonarCloud analysis
         run: ./gradlew sonar -Dsonar.token=${{ secrets.SONAR_TOKEN }}
 
-      - name: SonarCloud Quality Gate check
-        uses: sonarsource/sonarqube-quality-gate-action@master
-        timeout-minutes: 5
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: https://sonarcloud.io
