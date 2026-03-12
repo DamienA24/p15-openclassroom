@@ -50,10 +50,7 @@ jobs:
           script: ./gradlew connectedDebugAndroidTest
 
       - name: Generate JaCoCo coverage report
-        run: ./gradlew createDebugUnitTestCoverageReport
-
-      - name: List generated coverage files
-        run: find app/build/reports/coverage -type f 2>/dev/null || echo "No files in app/build/reports/coverage"
+        run: ./gradlew jacocoTestReport
 
       - name: SonarCloud analysis
         run: ./gradlew sonar -Dsonar.token=${{ secrets.SONAR_TOKEN }}

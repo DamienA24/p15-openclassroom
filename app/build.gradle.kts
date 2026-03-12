@@ -51,8 +51,6 @@ android {
 
     buildTypes {
         debug {
-            enableUnitTestCoverage = true
-            enableAndroidTestCoverage = true
         }
         release {
             signingConfig = signingConfigs.getByName("release")
@@ -77,20 +75,37 @@ android {
     }
 }
 
-// AGP's JacocoCoverageReport does NOT extend Gradle's JacocoReport, so withType<JacocoReport>()
-// cannot configure it. Use reflection to enable XML output on createDebugUnitTestCoverageReport.
+val jacocoExcludes = listOf(
+    "**/R.class", "**/R\$*.class", "**/BuildConfig.*", "**/Manifest*.*",
+    "**/*_MembersInjector.*", "**/Dagger*Component*.*", "**/Dagger*Component\$Builder*.*",
+    "**/*_Factory.*", "**/ComposableSingletons*",
+    "**/Hilt_*.class", "**/*_HiltModules*"
+)
+
+// Configure JacocoTaskExtension (JVM agent mode) on unit test tasks.
+// This generates build/jacoco/testDebugUnitTest.exec without modifying class bytecode CRC64.
 afterEvaluate {
-    tasks.findByName("createDebugUnitTestCoverageReport")?.let { task ->
-        try {
-            val reports = task.javaClass.getMethod("getReports").invoke(task)
-            val xml = reports.javaClass.getMethod("getXml").invoke(reports)
-            @Suppress("UNCHECKED_CAST")
-            (xml.javaClass.getMethod("getRequired").invoke(xml) as org.gradle.api.provider.Property<Boolean>)
-                .set(true)
-        } catch (e: Exception) {
-            logger.warn("Could not enable XML for createDebugUnitTestCoverageReport: ${e.message}")
+    tasks.withType<Test>().configureEach {
+        extensions.configure<org.gradle.testing.jacoco.plugins.JacocoTaskExtension> {
+            isIncludeNoLocationClasses = true
+            excludes = listOf("jdk.internal.*")
         }
     }
+}
+
+tasks.register<JacocoReport>("jacocoTestReport") {
+    dependsOn("testDebugUnitTest")
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+    }
+    classDirectories.setFrom(
+        fileTree("${layout.buildDirectory.get()}/tmp/kotlin-classes/debug") {
+            exclude(jacocoExcludes)
+        }
+    )
+    sourceDirectories.setFrom(files("src/main/java", "src/main/kotlin"))
+    executionData.setFrom(files("${layout.buildDirectory.get()}/jacoco/testDebugUnitTest.exec"))
 }
 
 dependencies {
