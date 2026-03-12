@@ -51,8 +51,6 @@ android {
 
     buildTypes {
         debug {
-            enableUnitTestCoverage = true
-            enableAndroidTestCoverage = true
         }
         release {
             signingConfig = signingConfigs.getByName("release")
@@ -77,38 +75,51 @@ android {
     }
 }
 
+val jacocoExcludes = listOf(
+    "**/R.class", "**/R\$*.class", "**/BuildConfig.*", "**/Manifest*.*",
+    "**/*_MembersInjector.*", "**/Dagger*Component*.*", "**/Dagger*Component\$Builder*.*",
+    "**/*_Factory.*", "**/ComposableSingletons*",
+    "**/Hilt_*.class", "**/*_HiltModules*"
+)
+
+// Force JaCoCo agent at EXECUTION time via doFirst — this runs after all AGP configuration
+// overrides (which happen during configuration phase and lazy task realization).
+// Agent mode instruments at runtime → exec CRC64 matches original classes in tmp/kotlin-classes/debug.
+afterEvaluate {
+    tasks.named("testDebugUnitTest", Test::class.java) {
+        doFirst {
+            extensions.configure<org.gradle.testing.jacoco.plugins.JacocoTaskExtension> {
+                isEnabled = true
+                isIncludeNoLocationClasses = true
+                excludes = listOf("jdk.internal.*")
+            }
+        }
+    }
+}
+
 tasks.register<JacocoReport>("jacocoTestReport") {
     dependsOn("testDebugUnitTest")
-
     reports {
         xml.required.set(true)
         html.required.set(true)
     }
-
-    val fileFilter = listOf(
-        "**/R.class", "**/R\$*.class", "**/BuildConfig.*", "**/Manifest*.*",
-        "**/*Test*.*", "android/**/*.*",
-        "**/hilt_aggregated_deps/**",
-        "**/*_MembersInjector.class",
-        "**/Dagger*Component*.class",
-        "**/*Module_*Factory.class",
-        "**/*_Factory.class",
-        "**/ComposableSingletons*"
+    classDirectories.setFrom(
+        fileTree("${layout.buildDirectory.get()}/tmp/kotlin-classes/debug") {
+            exclude(jacocoExcludes)
+        }
     )
+    sourceDirectories.setFrom(files("src/main/java"))
+    executionData.setFrom(fileTree(layout.buildDirectory.get().asFile) { include("**/*.exec") })
+}
 
-    val kotlinClasses = fileTree("${layout.buildDirectory.get()}/tmp/kotlin-classes/debug") {
-        exclude(fileFilter)
+// Module-level Sonar config: paths are relative to app/ so source mapping works correctly.
+// Setting these here (not in root) overrides AGP auto-detection without causing double-indexing.
+sonarqube {
+    properties {
+        property("sonar.sources", "src/main/java")
+        property("sonar.java.binaries", "build/tmp/kotlin-classes/debug")
+        property("sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml")
     }
-
-    sourceDirectories.setFrom(files("${project.projectDir}/src/main/java"))
-    classDirectories.setFrom(files(kotlinClasses))
-    executionData.setFrom(fileTree(layout.buildDirectory.get()) {
-        include(
-            "outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec",
-            "jacoco/testDebugUnitTest.exec",
-            "outputs/code_coverage/debugAndroidTest/connected/**/*.ec"
-        )
-    })
 }
 
 dependencies {
