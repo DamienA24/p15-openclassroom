@@ -42,6 +42,13 @@ jobs:
       - name: Run unit tests and generate coverage report
         run: ./gradlew testDebugUnitTest jacocoTestReport
 
+      - name: Verify coverage artifacts
+        run: |
+          echo "=== Exec files ==="
+          find app/build -name "*.exec" 2>/dev/null || echo "No exec files found"
+          echo "=== JaCoCo XML ==="
+          find app/build -name "jacocoTestReport.xml" 2>/dev/null || echo "No XML found"
+
       - name: Run instrumented tests
         uses: reactivecircus/android-emulator-runner@v2
         with:

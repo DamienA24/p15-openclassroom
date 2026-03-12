@@ -106,7 +106,17 @@ tasks.register<JacocoReport>("jacocoTestReport") {
         }
     )
     sourceDirectories.setFrom(files("src/main/java", "src/main/kotlin"))
-    executionData.setFrom(files("${layout.buildDirectory.get()}/jacoco/testDebugUnitTest.exec"))
+    executionData.setFrom(fileTree(layout.buildDirectory.get().asFile) { include("**/*.exec") })
+}
+
+// Module-level Sonar config: paths are relative to app/ so source mapping works correctly.
+// Setting these here (not in root) overrides AGP auto-detection without causing double-indexing.
+sonarqube {
+    properties {
+        property("sonar.sources", "src/main/java,src/main/kotlin")
+        property("sonar.java.binaries", "build/tmp/kotlin-classes/debug")
+        property("sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml")
+    }
 }
 
 dependencies {
