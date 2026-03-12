@@ -12,6 +12,9 @@ data class EventLocation(
     @PropertyName("longitude")
     val longitude: Double = 0.0
 ) {
+    val isValid: Boolean
+        get() = address.isNotBlank() && latitude != 0.0 && longitude != 0.0
+
     constructor() : this(
         address = "",
         latitude = 0.0,

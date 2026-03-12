@@ -35,6 +35,12 @@ data class User(
     val fullName: String
         get() = "$firstName $lastName"
 
+    val initials: String
+        get() = buildString {
+            if (firstName.isNotBlank()) append(firstName.first().uppercaseChar())
+            if (lastName.isNotBlank()) append(lastName.first().uppercaseChar())
+        }
+
     constructor() : this(
         uid = "",
         email = "",

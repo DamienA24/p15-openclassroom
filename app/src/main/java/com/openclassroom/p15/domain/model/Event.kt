@@ -35,6 +35,9 @@ data class Event(
     @PropertyName("updatedAt")
     val updatedAt: Timestamp = Timestamp.now()
 ) {
+    val hasImage: Boolean
+        get() = imageUrl.isNotBlank()
+
     constructor() : this(
         id = "",
         title = "",
