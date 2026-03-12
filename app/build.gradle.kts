@@ -87,6 +87,7 @@ val jacocoExcludes = listOf(
 afterEvaluate {
     tasks.withType<Test>().configureEach {
         extensions.configure<org.gradle.testing.jacoco.plugins.JacocoTaskExtension> {
+            isEnabled = true
             isIncludeNoLocationClasses = true
             excludes = listOf("jdk.internal.*")
         }
