@@ -82,14 +82,17 @@ val jacocoExcludes = listOf(
     "**/Hilt_*.class", "**/*_HiltModules*"
 )
 
-// Configure JacocoTaskExtension (JVM agent mode) on unit test tasks.
-// This generates build/jacoco/testDebugUnitTest.exec without modifying class bytecode CRC64.
+// Force JaCoCo agent at EXECUTION time via doFirst — this runs after all AGP configuration
+// overrides (which happen during configuration phase and lazy task realization).
+// Agent mode instruments at runtime → exec CRC64 matches original classes in tmp/kotlin-classes/debug.
 afterEvaluate {
-    tasks.withType<Test>().configureEach {
-        extensions.configure<org.gradle.testing.jacoco.plugins.JacocoTaskExtension> {
-            isEnabled = true
-            isIncludeNoLocationClasses = true
-            excludes = listOf("jdk.internal.*")
+    tasks.named("testDebugUnitTest", Test::class.java) {
+        doFirst {
+            extensions.configure<org.gradle.testing.jacoco.plugins.JacocoTaskExtension> {
+                isEnabled = true
+                isIncludeNoLocationClasses = true
+                excludes = listOf("jdk.internal.*")
+            }
         }
     }
 }
@@ -105,7 +108,7 @@ tasks.register<JacocoReport>("jacocoTestReport") {
             exclude(jacocoExcludes)
         }
     )
-    sourceDirectories.setFrom(files("src/main/java", "src/main/kotlin"))
+    sourceDirectories.setFrom(files("src/main/java"))
     executionData.setFrom(fileTree(layout.buildDirectory.get().asFile) { include("**/*.exec") })
 }
 
@@ -113,7 +116,7 @@ tasks.register<JacocoReport>("jacocoTestReport") {
 // Setting these here (not in root) overrides AGP auto-detection without causing double-indexing.
 sonarqube {
     properties {
-        property("sonar.sources", "src/main/java,src/main/kotlin")
+        property("sonar.sources", "src/main/java")
         property("sonar.java.binaries", "build/tmp/kotlin-classes/debug")
         property("sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml")
     }
